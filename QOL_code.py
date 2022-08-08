@@ -14,12 +14,11 @@ from sewar.full_ref import vifp
 
 load_training_data = False
 load_testing_data = False
-action_images = False
-resize = False
+squareDataset = False
 writeText = False
 getStats = False
 generateJPG = False
-generateBilinear = False
+generateAltLowRes = False
 
 avg_train_reward = []
 avg_valid_PSNR = []
@@ -54,6 +53,10 @@ unsharp_test_VIF = []
 bilinear_test_VIF = []
 nearest_test_VIF = []
 
+im_count = 0
+seen_folders = []
+
+# ------------------------------ LOAD AND RENDER TRAINING / TESTING METRICS ------------------------------
 if load_training_data or load_testing_data:
     with open("../ACDC-never-stats.txt", "r") as file:
         # Loading and formatting data for visualization
@@ -317,9 +320,6 @@ if load_training_data or load_testing_data:
         ax.set_facecolor('dimgrey')
         plt.show()
 
-im_count = 0
-seen_folders = []
-
 for root, dirs, files in os.walk("./BSD68_square/valid", topdown=True):
     for name in files:
         file_name = os.path.splitext(os.path.join(root, name))[0].replace('\\', '/') + \
@@ -336,7 +336,8 @@ for root, dirs, files in os.walk("./BSD68_square/valid", topdown=True):
         if sub_folder_len >= 5:
             sub_sub_folder_name = file_name.split('/')[4]
 
-        if generateBilinear:
+        # ------------------------------ GENERATE ALTERNATE LOW RES ------------------------------
+        if generateAltLowRes:
             if (sub_folder_name + sub_sub_folder_name) not in seen_folders:
                 seen_folders.append(sub_folder_name + sub_sub_folder_name)
 
@@ -352,6 +353,7 @@ for root, dirs, files in os.walk("./BSD68_square/valid", topdown=True):
                 near_save = folder_name + '/' + sub_folder_name + '/' + sub_sub_folder_name + '/' + "nearest.png"
                 cv2.imwrite(near_save, low_res_nearest(ground_truth))
 
+        # ------------------------------ GENERATE METRICS ------------------------------
         if getStats:
             with open("../ACDC-never-stats.txt", "a+") as file_out:
                 if (sub_folder_name + sub_sub_folder_name) not in seen_folders:
@@ -443,6 +445,7 @@ for root, dirs, files in os.walk("./BSD68_square/valid", topdown=True):
 
                 file_out.close()
 
+        # ------------------------------ GENERATE TRAINING / TESTING FILE ------------------------------
         if writeText:
             with open("../validation.txt", "a+") as file:
                 temp_name = file_name.replace('\\', '/').split('/')[-1]
@@ -451,8 +454,8 @@ for root, dirs, files in os.walk("./BSD68_square/valid", topdown=True):
 
                 file.write("\n" + file_name[2:].replace('\\', '/'))
 
-        # Resize
-        if resize:
+        # ------------------------------ SQUARE DATASET ------------------------------
+        if squareDataset:
             im = cv2.imread(file_name, 0)
             width, height = im.shape
 
@@ -510,43 +513,7 @@ for root, dirs, files in os.walk("./BSD68_square/valid", topdown=True):
                 square_im.thumbnail(square_im.size)
                 square_im.save(outfile, "JPEG", quality=100)
 
-        if action_images:
-            # Outputs JPEG files of complete action space applied to test image
-            print("ACTIONS")
-
-            outfile = "../"
-            # os.makedirs(outfile, exist_ok=True)
-
-            im = cv2.imread("../ADNI_all_test/1-jpg/1_outt-slice171_square.jpg/step_0_raw_image.png", 0)
-
-            local_averaged = cv2.blur(im, (4, 4))
-
-            image_down = cv2.resize(local_averaged, (64, 64), interpolation=cv2.INTER_CUBIC)  # Downsample image
-
-            image_up = cv2.resize(image_down, (256, 256), interpolation=cv2.INTER_CUBIC)  # Upsample back to input size
-
-            image_up = image_up / 255.0
-            # print(image_up[128])
-
-            cv2.imwrite(outfile + "GroundTruth.jpg", np.clip(im * 255, 0, 255))
-
-            cv2.imwrite(outfile + "Input.jpg", np.clip(image_up * 255, 0, 255))
-
-            cv2.imwrite(outfile + "Unsharp.jpg", np.clip(unsharp(image_up) * 255, 0, 255))
-
-            cv2.imwrite(outfile + "Gauss.jpg",
-                        np.clip(cv2.GaussianBlur(image_up, ksize=(5, 5), sigmaX=0.5) * 255, 0, 255))
-
-            cv2.imwrite(outfile + "Box.jpg", np.clip(box_blur(image_up, (5, 5)) * 255, 0, 255))
-
-            cv2.imwrite(outfile + "EdgeMore.jpg", np.clip(edge_enhance_more(image_up) * 255, 0, 255))
-
-            cv2.imwrite(outfile + "Sharpen.jpg", np.clip(sharpen(image_up) * 255, 0, 255))
-
-            cv2.imwrite(outfile + "Laplace.jpg", np.clip(laplacian(image_up) * 255, 0, 255))
-            action_images = False
-
-        # Check if current file has extension bmp (used to manually format datasets)
+        # ------------------------------ DATASET TO GREYSCALE JPG ------------------------------
         if generateJPG:
             if file_name[-4:] in [".gif", ".tif", ".png", ".dcm"]:
 
