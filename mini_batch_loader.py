@@ -96,7 +96,10 @@ class MiniBatchLoader(object):
                 # print("LOADED IMAGES", raw_xs.shape, processed_xs.shape)
 
         elif mini_batch_size == 1:
-            """ As currently implemented this is only true when validating / testing rather than training. """
+            """ 
+            As currently implemented this is only true when validating / testing rather than training. 
+            As currently implemented everything in validation / testing folder is a desired image, the desired_image list functions as a whitelist. 
+            """
             img = None
 
             # Save indices of desired images for exporting purposes later
@@ -112,13 +115,13 @@ class MiniBatchLoader(object):
                     raise RuntimeError("invalid image: {i}".format(i=path))
 
                 # file names of desired images
-                desired_images = ["2018_square", "8068_square"]
+                # desired_images = ["2018_square", "8068_square"]
 
                 image_id = path.split('/')
                 # print(image_id[-1][:-4])
 
-                if image_id[-1][:-4] in desired_images:
-                    desired_indices.append([image_id, index])
+                # if image_id[-1][:-4] in desired_images:
+                desired_indices.append([image_id, index])
 
             h, w = img.shape
             raw_xs = np.zeros((mini_batch_size, in_channels, h, w)).astype(np.float32)
