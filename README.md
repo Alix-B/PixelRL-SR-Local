@@ -17,6 +17,7 @@ We provide the sample codes for training and testing, as well as the pretrained 
 - Torch ~=1.12.0
 - Torchvision ~=0.13.0
 
+This work was performed on WSL2, Ubuntu 20.04.4 LTS with CUDA version 10.1.243.
 You can install the required libraries by the command `pip install -r requirements.txt`.
 
 ## Usage
