@@ -1,5 +1,5 @@
 # Multi-Step Reinforcement Learning for Medical Single Image Super-Resolution
-This is the official implementation of the add-link-to-paper.
+This is the official implementation of <a href="https://doi.org/10.1117/12.2653655">Multi-step reinforcement learning for medical image super-resolution</a>.
 We provide the sample codes for training and testing, as well as the pretrained model found in the paper.
 
 ## Requirements
